@@ -26,26 +26,19 @@ public class ConfigManager {
     
     public static void initialize() {
         try {
-            // Создаем папку конфига если её нет
             Files.createDirectories(CONFIG_DIR);
             Files.createDirectories(DIALOGS_DIR);
             
-            // Создаем config.json
             createConfigFile();
             
-            // Создаем lang.json
             createLangFile();
             
-            // Создаем файлы диалогов
             createDialogFiles();
             
-            // Загружаем конфиг
             loadConfig();
             
-            // Загружаем языковые файлы
             loadLang();
             
-            // Сохраняем время модификации диалогов
             updateDialogsModificationTime();
             
         } catch (IOException e) {
@@ -60,21 +53,18 @@ public class ConfigManager {
         String error = null;
         
         try {
-            // Проверяем изменения в config.json
             File configFile = CONFIG_DIR.resolve("config.json").toFile();
             if (configFile.exists() && configFile.lastModified() != configLastModified) {
                 loadConfig();
                 configChanged = true;
             }
             
-            // Проверяем изменения в lang.json
             File langFile = CONFIG_DIR.resolve("lang.json").toFile();
             if (langFile.exists() && langFile.lastModified() != langLastModified) {
                 loadLang();
                 langChanged = true;
             }
             
-            // Проверяем изменения в файлах диалогов
             long currentDialogsTime = getDialogsModificationTime();
             if (currentDialogsTime != dialogsLastModified) {
                 dialogsChanged = true;
@@ -163,7 +153,6 @@ public class ConfigManager {
         String message = getMessageByPath(key);
         if (message == null) return key;
         
-        // Заменяем плейсхолдеры
         for (int i = 0; i < args.length; i += 2) {
             if (i + 1 < args.length) {
                 String placeholder = "{" + args[i] + "}";
@@ -321,19 +310,12 @@ public class ConfigManager {
     }
     
     private static void createDialogFiles() throws IOException {
-        // Создаем папку register
         Path registerDir = DIALOGS_DIR.resolve("register");
         Files.createDirectories(registerDir);
-        
-        // Создаем папку login
         Path loginDir = DIALOGS_DIR.resolve("login");
         Files.createDirectories(loginDir);
-        
-        // Создаем папку changepass
         Path changepassDir = DIALOGS_DIR.resolve("changepass");
         Files.createDirectories(changepassDir);
-        
-        // register/register.json
         createDialogFile(registerDir, "register.json", """
 {
   "type": "minecraft:multi_action",
@@ -375,7 +357,6 @@ public class ConfigManager {
 }
 """);
         
-        // register/error.json
         createDialogFile(registerDir, "error.json", """
 {
   "type": "minecraft:multi_action",
@@ -417,7 +398,6 @@ public class ConfigManager {
 }
 """);
         
-        // register/short.json
         createDialogFile(registerDir, "short.json", """
 {
   "type": "minecraft:multi_action",
@@ -459,7 +439,6 @@ public class ConfigManager {
 }
 """);
         
-        // register/empty.json
         createDialogFile(registerDir, "empty.json", """
 {
   "type": "minecraft:multi_action",
@@ -501,7 +480,6 @@ public class ConfigManager {
 }
 """);
         
-        // login/login.json
         createDialogFile(loginDir, "login.json", """
 {
   "type": "minecraft:multi_action",
@@ -538,7 +516,6 @@ public class ConfigManager {
 }
 """);
         
-        // login/error.json
         createDialogFile(loginDir, "error.json", """
 {
   "type": "minecraft:multi_action",
@@ -575,7 +552,6 @@ public class ConfigManager {
 }
 """);
         
-        // login/empty.json
         createDialogFile(loginDir, "empty.json", """
 {
   "type": "minecraft:multi_action",
@@ -612,7 +588,6 @@ public class ConfigManager {
 }
 """);
         
-        // login/short.json
         createDialogFile(loginDir, "short.json", """
 {
   "type": "minecraft:multi_action",
@@ -649,7 +624,6 @@ public class ConfigManager {
 }
 """);
         
-        // changepass/changepass.json
         createDialogFile(changepassDir, "changepass.json", """
 {
   "type": "minecraft:multi_action",
@@ -691,7 +665,6 @@ public class ConfigManager {
 }
 """);
         
-        // changepass/error_oldpass.json
         createDialogFile(changepassDir, "error_oldpass.json", """
 {
   "type": "minecraft:multi_action",
@@ -733,7 +706,6 @@ public class ConfigManager {
 }
 """);
         
-        // changepass/short.json
         createDialogFile(changepassDir, "short.json", """
 {
   "type": "minecraft:multi_action",
@@ -775,7 +747,6 @@ public class ConfigManager {
 }
 """);
         
-        // changepass/empty.json
         createDialogFile(changepassDir, "empty.json", """
 {
   "type": "minecraft:multi_action",
@@ -817,7 +788,6 @@ public class ConfigManager {
 }
 """);
         
-        // changepass/same.json
         createDialogFile(changepassDir, "same.json", """
 {
   "type": "minecraft:multi_action",
@@ -872,7 +842,6 @@ public class ConfigManager {
         }
     }
     
-    // Классы для десериализации конфига
     public static class Config {
         public Authentication authentication;
         public Dimension dimension;
@@ -931,7 +900,6 @@ public class ConfigManager {
         public int teleport_delay_ticks = 0;
     }
     
-    // Классы для lang.json
     public static class LangConfig {
         public CommandLang command = new CommandLang();
         public LoggingLang logging = new LoggingLang();
@@ -965,7 +933,6 @@ public class ConfigManager {
         public String player_registered = "Player {player} registered with password: {password}";
     }
     
-    // Результат перезагрузки
     public static class ReloadResult {
         public final boolean configChanged;
         public final boolean dialogsChanged;

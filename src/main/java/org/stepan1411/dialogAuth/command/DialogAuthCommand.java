@@ -19,13 +19,13 @@ public class DialogAuthCommand {
         dispatcher.register(
             CommandManager.literal("dialogauth")
                 .then(CommandManager.literal("register")
-                    .executes(DialogAuthCommand::executeRegisterNoArgs) // Без аргументов - открыть диалог
+                    .executes(DialogAuthCommand::executeRegisterNoArgs)
                     .then(CommandManager.argument("passwords", StringArgumentType.greedyString())
                         .executes(DialogAuthCommand::executeRegisterGreedy)
                     )
                 )
                 .then(CommandManager.literal("login")
-                    .executes(DialogAuthCommand::executeLoginNoArgs) // Без аргументов - открыть диалог
+                    .executes(DialogAuthCommand::executeLoginNoArgs)
                     .then(CommandManager.argument("password", StringArgumentType.greedyString())
                         .executes(DialogAuthCommand::executeLogin)
                     )
@@ -37,7 +37,7 @@ public class DialogAuthCommand {
                     .executes(DialogAuthCommand::executeChangePass)
                 )
                 .then(CommandManager.literal("changepassdialog")
-                    .executes(DialogAuthCommand::executeChangePassDialogNoArgs) // Без аргументов - открыть диалог
+                    .executes(DialogAuthCommand::executeChangePassDialogNoArgs)
                     .then(CommandManager.argument("passwords", StringArgumentType.greedyString())
                         .executes(DialogAuthCommand::executeChangePassDialog)
                     )
@@ -59,7 +59,6 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal("§cThis command can only be used during authentication!"));
             return 0;
@@ -68,9 +67,7 @@ public class DialogAuthCommand {
         String passwords = StringArgumentType.getString(context, "passwords");
         String[] parts = passwords.split(" ", 2);
         
-        // Если меньше 2 частей, значит не хватает аргументов
         if (parts.length < 2) {
-            // Открываем диалог снова
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -95,13 +92,11 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal("§cThis command can only be used during authentication!"));
             return 0;
         }
         
-        // Открываем диалог регистрации снова
         Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register");
         var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
         var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -123,13 +118,11 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal("§cThis command can only be used during authentication!"));
             return 0;
         }
         
-        // Открываем диалог логина снова
         Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "login");
         var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
         var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -151,7 +144,6 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal("§cThis command can only be used during authentication!"));
             return 0;
@@ -159,14 +151,12 @@ public class DialogAuthCommand {
         
         String password = StringArgumentType.getString(context, "password");
         
-        // Убираем _ в конце если он есть (placeholder из диалога)
         if (password.endsWith("_")) {
             password = password.substring(0, password.length() - 1);
         }
         
         password = password.trim();
         
-        // Если пароль пустой после trim, показываем диалог с ошибкой
         if (password.isEmpty()) {
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "login_empty");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
@@ -178,7 +168,6 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем длину пароля
         int minLength = ConfigManager.getMinPasswordLength();
         if (password.length() < minLength) {
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "login_short");
@@ -191,10 +180,8 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем пароль
         String username = player.getName().getString();
         if (!PasswordStorage.checkPassword(username, password)) {
-            // Неправильный пароль
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "login_error");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -205,18 +192,14 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Успешный логин
         DialogAuth.LOGGER.info("Player {} logged in successfully", username);
         
-        // Получаем IP адрес игрока
         String ipAddress = DialogAuth.getPlayerIpAddress(player);
         
-        // Обновляем сессию
         PasswordStorage.updateSession(username, ipAddress);
         
         source.sendFeedback(() -> Text.literal("§aSuccessfully logged in!"), false);
         
-        // Возвращаем игрока в мир
         boolean success = DialogAuth.returnPlayerToWorld(player, source.getServer());
         
         if (!success) {
@@ -228,9 +211,7 @@ public class DialogAuthCommand {
     }
     
     private static int processRegistration(ServerCommandSource source, ServerPlayerEntity player, String password1, String password2) {
-        // Проверяем, что пароли не пустые
         if (password1.isEmpty() || password2.isEmpty()) {
-            // Открываем диалог с ошибкой о пустом пароле
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register_empty");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -243,9 +224,7 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что пароли совпадают
         if (!password1.equals(password2)) {
-            // Открываем диалог с ошибкой
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register_error");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -258,10 +237,8 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем длину пароля
         int minLength = ConfigManager.getMinPasswordLength();
         if (password1.length() < minLength) {
-            // Открываем диалог с ошибкой о коротком пароле
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register_short");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -274,23 +251,17 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Логируем регистрацию
         DialogAuth.LOGGER.info(ConfigManager.getMessage("logging.player_registered", "player", player.getName().getString(), "password", password1));
         
-        // Получаем IP адрес игрока
         String ipAddress = DialogAuth.getPlayerIpAddress(player);
         
-        // Сохраняем пароль
         PasswordStorage.registerPlayer(player.getName().getString(), player.getUuid(), password1);
         
-        // Обновляем сессию
         PasswordStorage.updateSession(player.getName().getString(), ipAddress);
         
-        // Отправляем сообщение игроку
         String successMsg = ConfigManager.getMessage("command.register.success");
         source.sendFeedback(() -> Text.literal(successMsg), false);
         
-        // Возвращаем игрока в мир
         boolean success = DialogAuth.returnPlayerToWorld(player, source.getServer());
         
         if (!success) {
@@ -312,13 +283,10 @@ public class DialogAuthCommand {
         String password1 = StringArgumentType.getString(context, "password1");
         String password2 = StringArgumentType.getString(context, "password2");
         
-        // Заменяем _ на пустую строку (значение по умолчанию из диалога)
         if (password1.equals("_")) password1 = "";
         if (password2.equals("_")) password2 = "";
         
-        // Проверяем, что пароли не пустые
         if (password1.isEmpty() || password2.isEmpty()) {
-            // Открываем диалог с ошибкой о пустом пароле
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register_empty");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -331,9 +299,7 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что пароли совпадают
         if (!password1.equals(password2)) {
-            // Открываем диалог с ошибкой
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register_error");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -346,9 +312,7 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем длину пароля
         if (password1.length() < 4) {
-            // Открываем диалог с ошибкой о коротком пароле
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "register_short");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -361,16 +325,12 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Финальная переменная для использования в лямбде
         final String finalPassword = password1;
         
-        // Логируем регистрацию
         DialogAuth.LOGGER.info("Player {} registered with password: {}", player.getName().getString(), finalPassword);
         
-        // Отправляем сообщение игроку
         source.sendFeedback(() -> Text.literal("§aSuccessfully registered with password: §e" + finalPassword), false);
         
-        // Возвращаем игрока в мир
         boolean success = DialogAuth.returnPlayerToWorld(player, source.getServer());
         
         if (!success) {
@@ -389,29 +349,24 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal(ConfigManager.getMessage("command.leave.only_in_auth")));
             return 0;
         }
         
-        // Сначала возвращаем игрока в мир
         boolean success = DialogAuth.returnPlayerToWorld(player, source.getServer());
         
         String disconnectMsg = ConfigManager.getMessage("command.leave.disconnect_message");
         
         if (success) {
-            // Ждём немного, чтобы телепортация завершилась, затем кикаем
             source.getServer().execute(() -> {
                 try {
-                    Thread.sleep(50); // Небольшая задержка
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
-                    // Игнорируем
                 }
                 player.networkHandler.disconnect(Text.literal(disconnectMsg));
             });
         } else {
-            // Если не удалось вернуть, просто кикаем
             player.networkHandler.disconnect(Text.literal(disconnectMsg));
         }
         
@@ -454,7 +409,6 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Телепортируем игрока в auth измерение
         DialogAuth.teleportToAuthForChangePass(player, source.getServer());
         
         return 1;
@@ -468,13 +422,11 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal("§cThis command can only be used during authentication!"));
             return 0;
         }
         
-        // Открываем диалог changepass снова
         Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "changepass");
         var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
         var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -494,7 +446,6 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal("§cThis command can only be used during authentication!"));
             return 0;
@@ -503,9 +454,7 @@ public class DialogAuthCommand {
         String passwords = StringArgumentType.getString(context, "passwords");
         String[] parts = passwords.split(" ", 2);
         
-        // Если меньше 2 частей, значит не хватает аргументов
         if (parts.length < 2) {
-            // Открываем диалог снова
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "changepass");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -519,7 +468,6 @@ public class DialogAuthCommand {
         String oldPassword = parts[0].trim();
         String newPassword = parts[1].trim();
         
-        // Проверяем, что пароли не пустые
         if (oldPassword.isEmpty() || newPassword.isEmpty()) {
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "changepass_empty");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
@@ -531,7 +479,6 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что новый пароль отличается от старого
         if (oldPassword.equals(newPassword)) {
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "changepass_same");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
@@ -543,7 +490,6 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем длину нового пароля
         int minLength = ConfigManager.getMinPasswordLength();
         if (newPassword.length() < minLength) {
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "changepass_short");
@@ -556,10 +502,8 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем старый пароль
         String username = player.getName().getString();
         if (!PasswordStorage.checkPassword(username, oldPassword)) {
-            // Неправильный старый пароль
             Identifier dialogId = Identifier.of(DialogAuth.MOD_ID, "changepass_error_oldpass");
             var dialogRegistry = source.getServer().getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
             var dialogEntry = dialogRegistry.getEntry(dialogId);
@@ -570,11 +514,9 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Меняем пароль
         PasswordStorage.changePassword(username, newPassword);
         source.sendFeedback(() -> Text.literal("§aPassword changed successfully!"), false);
         
-        // Возвращаем игрока в мир
         boolean success = DialogAuth.returnPlayerToWorld(player, source.getServer());
         
         if (!success) {
@@ -593,13 +535,11 @@ public class DialogAuthCommand {
             return 0;
         }
         
-        // Проверяем, что игрок в auth измерении
         if (!DialogAuth.isPlayerInAuthDimension(player, source.getServer())) {
             source.sendError(Text.literal("§cThis command can only be used during authentication!"));
             return 0;
         }
         
-        // Возвращаем игрока в мир без кика
         DialogAuth.returnPlayerToWorld(player, source.getServer());
         
         return 1;
