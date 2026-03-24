@@ -2,11 +2,14 @@
   "schemaVersion": 1,
   "id": "dialog-auth",
   "version": "${version}",
-  "name": "dialog-auth",
-  "description": "",
-  "authors": [],
-  "contact": {},
-  "license": "All-Rights-Reserved",
+  "name": "DialogAuth",
+  "description": "A modern, secure authentication system for Minecraft servers using native dialog windows",
+  "authors": ["Stepan1411"],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/dialog-auth",
+    "issues": "https://github.com/stepan1411/dialog-auth/issues"
+  },
+  "license": "MIT",
   "icon": "assets/dialog-auth/icon.png",
   "environment": "server",
   "entrypoints": {

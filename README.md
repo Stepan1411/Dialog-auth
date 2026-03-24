@@ -2,6 +2,10 @@
 
 A modern, secure authentication system for Minecraft servers using native dialog windows.
 
+![modrinth](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/modrinth_64h.png) ![github](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/github_64h.png)
+
+![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/fabric_64h.png) soon on forge and neoforge
+
 ## Features
 
 ✨ **Native Dialog Interface** - Clean, intuitive authentication using Minecraft's built-in dialog system
@@ -113,10 +117,12 @@ All dialogs can be customized in `config/dialogauth/dialogs/`:
 
 ## Installation
 
-1. Download the mod
-2. Place in your server's `mods` folder
-3. Start the server
-4. Configuration files will be auto-generated in `config/dialogauth/`
+1. Download and install [Fabric Loader](https://fabricmc.net/use/)
+2. Download [Fabric API](https://modrinth.com/mod/fabric-api)
+3. Download DialogAuth from [Modrinth](https://modrinth.com/mod/dialog-auth)
+4. Place both mods in your server's `mods` folder
+5. Start your server
+6. Configuration files will be auto-generated in `config/dialogauth/`
 
 ## Support
 

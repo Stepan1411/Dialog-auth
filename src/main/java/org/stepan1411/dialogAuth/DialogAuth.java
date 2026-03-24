@@ -216,35 +216,45 @@ public class DialogAuth implements ModInitializer {
         ServerWorld authWorld = server.getWorld(AUTH_DIMENSION);
         if (authWorld == null) return false;
         
-        // Сравниваем через поле world (которое protected в Entity)
-        // Используем рефлексию или альтернативный способ
+        // Получаем мир игрока через рефлексию - перебираем все поля
         try {
-            var worldField = net.minecraft.entity.Entity.class.getDeclaredField("world");
-            worldField.setAccessible(true);
-            Object playerWorld = worldField.get(player);
-            return playerWorld == authWorld;
+            for (var field : net.minecraft.entity.Entity.class.getDeclaredFields()) {
+                if (field.getType() == net.minecraft.world.World.class) {
+                    field.setAccessible(true);
+                    Object playerWorld = field.get(player);
+                    return playerWorld == authWorld;
+                }
+            }
+            LOGGER.error("Could not find world field in Entity class");
+            return false;
         } catch (Exception e) {
+            LOGGER.error("Failed to check player dimension", e);
             return false;
         }
     }
     
     public static String getPlayerIpAddress(ServerPlayerEntity player) {
         try {
-            var connectionField = net.minecraft.server.network.ServerCommonNetworkHandler.class.getDeclaredField("connection");
-            connectionField.setAccessible(true);
-            Object connection = connectionField.get(player.networkHandler);
-            if (connection instanceof net.minecraft.network.ClientConnection) {
-                String fullAddress = ((net.minecraft.network.ClientConnection) connection).getAddress().toString();
-                // Убираем порт из адреса (например "/127.0.0.1:12345" -> "127.0.0.1")
-                if (fullAddress.startsWith("/")) {
-                    fullAddress = fullAddress.substring(1);
+            // Перебираем все поля ServerCommonNetworkHandler для поиска ClientConnection
+            for (var field : net.minecraft.server.network.ServerCommonNetworkHandler.class.getDeclaredFields()) {
+                if (field.getType() == net.minecraft.network.ClientConnection.class) {
+                    field.setAccessible(true);
+                    Object connection = field.get(player.networkHandler);
+                    if (connection instanceof net.minecraft.network.ClientConnection) {
+                        String fullAddress = ((net.minecraft.network.ClientConnection) connection).getAddress().toString();
+                        // Убираем порт из адреса (например "/127.0.0.1:12345" -> "127.0.0.1")
+                        if (fullAddress.startsWith("/")) {
+                            fullAddress = fullAddress.substring(1);
+                        }
+                        int colonIndex = fullAddress.indexOf(':');
+                        if (colonIndex > 0) {
+                            return fullAddress.substring(0, colonIndex);
+                        }
+                        return fullAddress;
+                    }
                 }
-                int colonIndex = fullAddress.indexOf(':');
-                if (colonIndex > 0) {
-                    return fullAddress.substring(0, colonIndex);
-                }
-                return fullAddress;
             }
+            LOGGER.error("Could not find connection field in ServerCommonNetworkHandler");
         } catch (Exception e) {
             LOGGER.error("Failed to get player IP address", e);
         }
@@ -268,18 +278,21 @@ public class DialogAuth implements ModInitializer {
             return;
         }
         
-        // Получаем текущий мир игрока через рефлексию
-        ServerWorld currentWorld = null;
+        // Получаем текущий мир игрока через рефлексию - перебираем все поля
+        ServerWorld currentWorld = server.getOverworld(); // default value
         try {
-            var worldField = net.minecraft.entity.Entity.class.getDeclaredField("world");
-            worldField.setAccessible(true);
-            Object playerWorld = worldField.get(player);
-            if (playerWorld instanceof ServerWorld) {
-                currentWorld = (ServerWorld) playerWorld;
+            for (var field : net.minecraft.entity.Entity.class.getDeclaredFields()) {
+                if (field.getType() == net.minecraft.world.World.class) {
+                    field.setAccessible(true);
+                    Object playerWorld = field.get(player);
+                    if (playerWorld instanceof ServerWorld) {
+                        currentWorld = (ServerWorld) playerWorld;
+                        break;
+                    }
+                }
             }
         } catch (Exception e) {
             LOGGER.error("Failed to get player world", e);
-            currentWorld = server.getOverworld(); // Fallback to overworld
         }
         
         // Сохраняем текущую позицию игрока
