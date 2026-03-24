@@ -74,34 +74,50 @@ public class DialogAuth implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
             
-            // Сохраняем позицию только если её ещё нет (первый вход)
-            if (!savedLocations.containsKey(player.getUuid())) {
-                // Игрок всегда заходит в оверворлд при первом подключении
-                ServerWorld world = server.getOverworld();
-                Vec3d pos = new Vec3d(player.getX(), player.getY(), player.getZ());
-                float yaw = player.getYaw();
-                float pitch = player.getPitch();
-                GameMode gameMode = player.interactionManager.getGameMode();
-                
-                PlayerLocation location = new PlayerLocation(
-                    world.getRegistryKey(),
-                    pos,
-                    yaw,
-                    pitch,
-                    gameMode
-                );
-                savedLocations.put(player.getUuid(), location);
-            }
-            
             server.execute(() -> {
-                // Помечаем игрока как аутентифицирующегося
-                authenticatingPlayers.put(player.getUuid(), true);
+                // Получаем IP адрес игрока
+                String ipAddress = getPlayerIpAddress(player);
                 
-                // Телепортируем в измерение auth
-                teleportToAuth(player, server);
+                // Проверяем, зарегистрирован ли игрок
+                boolean isRegistered = PasswordStorage.isPlayerRegistered(player.getName().getString());
                 
-                // Показываем диалог
-                showAuthDialog(player, server);
+                // Проверяем, нужна ли аутентификация
+                boolean needsAuth = !isRegistered || PasswordStorage.needsLogin(player.getName().getString(), ipAddress);
+                
+                if (needsAuth) {
+                    // Нужна аутентификация - сохраняем позицию и телепортируем в auth
+                    
+                    // Сохраняем позицию только если её ещё нет
+                    if (!savedLocations.containsKey(player.getUuid())) {
+                        // Игрок всегда заходит в оверворлд при первом подключении
+                        ServerWorld world = server.getOverworld();
+                        Vec3d pos = new Vec3d(player.getX(), player.getY(), player.getZ());
+                        float yaw = player.getYaw();
+                        float pitch = player.getPitch();
+                        GameMode gameMode = player.interactionManager.getGameMode();
+                        
+                        PlayerLocation location = new PlayerLocation(
+                            world.getRegistryKey(),
+                            pos,
+                            yaw,
+                            pitch,
+                            gameMode
+                        );
+                        savedLocations.put(player.getUuid(), location);
+                    }
+                    
+                    // Помечаем игрока как аутентифицирующегося
+                    authenticatingPlayers.put(player.getUuid(), true);
+                    
+                    // Телепортируем в измерение auth
+                    teleportToAuth(player, server);
+                    
+                    // Показываем диалог
+                    showAuthDialog(player, server, isRegistered);
+                } else {
+                    // Сессия активна - пропускаем аутентификацию
+                    LOGGER.info("Player {} has valid session, skipping authentication", player.getName().getString());
+                }
             });
         });
         
@@ -135,21 +151,29 @@ public class DialogAuth implements ModInitializer {
         player.teleportTo(target);
     }
     
-    private void showAuthDialog(ServerPlayerEntity player, MinecraftServer server) {
-        // Проверяем, зарегистрирован ли игрок
-        boolean isRegistered = PasswordStorage.isPlayerRegistered(player.getName().getString());
-        
-        Identifier dialogId = isRegistered 
-            ? Identifier.of(MOD_ID, "login")
-            : Identifier.of(MOD_ID, "register");
-        
-        var dialogRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
-        var dialogEntry = dialogRegistry.getEntry(dialogId);
-        
-        if (dialogEntry.isPresent()) {
-            player.openDialog(dialogEntry.get());
+    private void showAuthDialog(ServerPlayerEntity player, MinecraftServer server, boolean isRegistered) {
+        if (!isRegistered) {
+            // Не зарегистрирован - показываем регистрацию
+            Identifier dialogId = Identifier.of(MOD_ID, "register");
+            var dialogRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
+            var dialogEntry = dialogRegistry.getEntry(dialogId);
+            
+            if (dialogEntry.isPresent()) {
+                player.openDialog(dialogEntry.get());
+            } else {
+                LOGGER.error("Dialog {} not found in registry!", dialogId);
+            }
         } else {
-            LOGGER.error("Dialog {} not found in registry!", dialogId);
+            // Зарегистрирован - показываем логин
+            Identifier dialogId = Identifier.of(MOD_ID, "login");
+            var dialogRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.DIALOG);
+            var dialogEntry = dialogRegistry.getEntry(dialogId);
+            
+            if (dialogEntry.isPresent()) {
+                player.openDialog(dialogEntry.get());
+            } else {
+                LOGGER.error("Dialog {} not found in registry!", dialogId);
+            }
         }
     }
     
@@ -202,6 +226,29 @@ public class DialogAuth implements ModInitializer {
         } catch (Exception e) {
             return false;
         }
+    }
+    
+    public static String getPlayerIpAddress(ServerPlayerEntity player) {
+        try {
+            var connectionField = net.minecraft.server.network.ServerCommonNetworkHandler.class.getDeclaredField("connection");
+            connectionField.setAccessible(true);
+            Object connection = connectionField.get(player.networkHandler);
+            if (connection instanceof net.minecraft.network.ClientConnection) {
+                String fullAddress = ((net.minecraft.network.ClientConnection) connection).getAddress().toString();
+                // Убираем порт из адреса (например "/127.0.0.1:12345" -> "127.0.0.1")
+                if (fullAddress.startsWith("/")) {
+                    fullAddress = fullAddress.substring(1);
+                }
+                int colonIndex = fullAddress.indexOf(':');
+                if (colonIndex > 0) {
+                    return fullAddress.substring(0, colonIndex);
+                }
+                return fullAddress;
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to get player IP address", e);
+        }
+        return "unknown";
     }
     
     public static void teleportToAuthForChangePass(ServerPlayerEntity player, MinecraftServer server) {

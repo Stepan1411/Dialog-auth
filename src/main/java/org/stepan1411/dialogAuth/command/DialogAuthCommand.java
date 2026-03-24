@@ -207,6 +207,13 @@ public class DialogAuthCommand {
         
         // Успешный логин
         DialogAuth.LOGGER.info("Player {} logged in successfully", username);
+        
+        // Получаем IP адрес игрока
+        String ipAddress = DialogAuth.getPlayerIpAddress(player);
+        
+        // Обновляем сессию
+        PasswordStorage.updateSession(username, ipAddress);
+        
         source.sendFeedback(() -> Text.literal("§aSuccessfully logged in!"), false);
         
         // Возвращаем игрока в мир
@@ -270,12 +277,17 @@ public class DialogAuthCommand {
         // Логируем регистрацию
         DialogAuth.LOGGER.info(ConfigManager.getMessage("logging.player_registered", "player", player.getName().getString(), "password", password1));
         
+        // Получаем IP адрес игрока
+        String ipAddress = DialogAuth.getPlayerIpAddress(player);
+        
         // Сохраняем пароль
         PasswordStorage.registerPlayer(player.getName().getString(), player.getUuid(), password1);
         
+        // Обновляем сессию
+        PasswordStorage.updateSession(player.getName().getString(), ipAddress);
+        
         // Отправляем сообщение игроку
-        final String finalPassword = password1;
-        String successMsg = ConfigManager.getMessage("command.register.success", "password", finalPassword);
+        String successMsg = ConfigManager.getMessage("command.register.success");
         source.sendFeedback(() -> Text.literal(successMsg), false);
         
         // Возвращаем игрока в мир

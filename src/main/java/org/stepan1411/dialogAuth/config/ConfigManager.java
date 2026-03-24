@@ -238,7 +238,9 @@ public class ConfigManager {
     "min_password_length": 4,
     "max_password_length": 32,
     "enable_registration": true,
-    "enable_login": true
+    "enable_login": true,
+    "session_duration_hours": 12,
+    "check_ip_address": true
   },
   "dimension": {
     "dimension_id": "dialog_auth:auth",
@@ -257,7 +259,7 @@ public class ConfigManager {
     "can_close_with_escape": false
   },
   "messages": {
-    "registration_success": "§aSuccessfully registered with password: §e{password}",
+    "registration_success": "§aSuccessfully registered!",
     "password_mismatch": "§cPasswords do not match!§r",
     "password_too_short": "§cPassword must be at least {min_length} characters long!§r",
     "returning_to_world": "Returning to world..."
@@ -265,7 +267,8 @@ public class ConfigManager {
   "logging": {
     "log_registrations": true,
     "log_passwords": true,
-    "log_mob_prevention": false
+    "log_mob_prevention": false,
+    "log_sessions": true
   },
   "advanced": {
     "save_player_location": true,
@@ -291,7 +294,7 @@ public class ConfigManager {
 {
   "command": {
     "register": {
-      "success": "§aSuccessfully registered with password: §e{password}",
+      "success": "§aSuccessfully registered!",
       "only_in_auth": "§cThis command can only be used during authentication!",
       "player_only": "This command can only be used by players"
     },
@@ -307,7 +310,7 @@ public class ConfigManager {
     }
   },
   "logging": {
-    "player_registered": "Player {player} registered with password: {password}"
+    "player_registered": "Registration successful"
   }
 }
 """;
@@ -884,6 +887,8 @@ public class ConfigManager {
         public int max_password_length = 32;
         public boolean enable_registration = true;
         public boolean enable_login = true;
+        public int session_duration_hours = 12;
+        public boolean check_ip_address = true;
     }
     
     public static class Dimension {
@@ -917,6 +922,7 @@ public class ConfigManager {
         public boolean log_registrations = true;
         public boolean log_passwords = true;
         public boolean log_mob_prevention = false;
+        public boolean log_sessions = true;
     }
     
     public static class Advanced {
@@ -938,7 +944,7 @@ public class ConfigManager {
     }
     
     public static class RegisterCommand {
-        public String success = "§aSuccessfully registered with password: §e{password}";
+        public String success = "§aSuccessfully registered!";
         public String only_in_auth = "§cThis command can only be used during authentication!";
         public String player_only = "This command can only be used by players";
     }

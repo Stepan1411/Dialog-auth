@@ -22,6 +22,7 @@ public class PasswordStorage {
     private static final Path STORAGE_DIR = Path.of("config", "dialogauth");
     private static final Path PASSWORDS_FILE = STORAGE_DIR.resolve("passwords.json");
     private static final int BCRYPT_COST = 12; // Стоимость хеширования (чем выше, тем безопаснее, но медленнее)
+    private static final long SESSION_DURATION = 12 * 60 * 60 * 1000; // 12 часов в миллисекундах
     
     private static Map<String, PlayerData> passwords = new HashMap<>();
     
@@ -97,13 +98,50 @@ public class PasswordStorage {
         }
     }
     
+    public static boolean needsLogin(String username, String ipAddress) {
+        PlayerData data = passwords.get(username.toLowerCase());
+        if (data == null) {
+            return true; // Не зарегистрирован - нужна регистрация
+        }
+        
+        // Проверяем IP адрес
+        if (data.lastIp != null && !data.lastIp.equals(ipAddress)) {
+            DialogAuth.LOGGER.info("Player {} IP changed from {} to {}, requiring login", username, data.lastIp, ipAddress);
+            return true; // IP изменился - нужен логин
+        }
+        
+        // Проверяем время последнего входа
+        long currentTime = System.currentTimeMillis();
+        if (data.lastLoginTime == 0 || (currentTime - data.lastLoginTime) > SESSION_DURATION) {
+            DialogAuth.LOGGER.info("Player {} session expired, requiring login", username);
+            return true; // Сессия истекла - нужен логин
+        }
+        
+        DialogAuth.LOGGER.info("Player {} has valid session, skipping login", username);
+        return false; // Сессия активна и IP совпадает - логин не нужен
+    }
+    
+    public static void updateSession(String username, String ipAddress) {
+        PlayerData data = passwords.get(username.toLowerCase());
+        if (data != null) {
+            data.lastLoginTime = System.currentTimeMillis();
+            data.lastIp = ipAddress;
+            savePasswords();
+            DialogAuth.LOGGER.info("Player {} session updated, IP: {}", username, ipAddress);
+        }
+    }
+    
     public static class PlayerData {
         public String uuid;
         public String passwordHash; // Теперь храним хеш, а не пароль
+        public long lastLoginTime; // Время последнего входа в миллисекундах
+        public String lastIp; // Последний IP адрес
         
         public PlayerData(String uuid, String passwordHash) {
             this.uuid = uuid;
             this.passwordHash = passwordHash;
+            this.lastLoginTime = 0;
+            this.lastIp = null;
         }
     }
 }
