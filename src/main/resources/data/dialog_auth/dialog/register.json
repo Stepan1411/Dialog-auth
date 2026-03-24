@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:multi_action",
+  "title": "Register",
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": "Create your password"
+  },
+  "can_close_with_escape": false,
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "pass1",
+      "label": "Enter password"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "pass2",
+      "label": "Repeat password"
+    }
+  ],
+  "exit_action": {
+    "label": "Leave",
+    "action": {
+      "type": "minecraft:run_command",
+      "command": "dialogauth leave"
+    }
+  },
+  "actions": [
+    {
+      "label": "Register",
+      "action": {
+        "type": "dynamic/run_command",
+        "template": "dialogauth register $(pass1) $(pass2)"
+      }
+    }
+  ],
+  "pause": false
+}

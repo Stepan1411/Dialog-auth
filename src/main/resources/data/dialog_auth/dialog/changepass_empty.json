@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:multi_action",
+  "title": "Change password",
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": "§cPasswords cannot be empty!§r\n\nPlease try again"
+  },
+  "can_close_with_escape": false,
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "oldpass",
+      "label": "Enter old password"
+    },
+    {
+      "type": "minecraft:text",
+      "key": "newpass",
+      "label": "Enter new password"
+    }
+  ],
+  "exit_action": {
+    "label": "Cancel",
+    "action": {
+      "type": "minecraft:run_command",
+      "command": "dialogauth leavechangepass"
+    }
+  },
+  "actions": [
+    {
+      "label": "Change",
+      "action": {
+        "type": "dynamic/run_command",
+        "template": "dialogauth changepassdialog $(oldpass) $(newpass)"
+      }
+    }
+  ],
+  "pause": false
+}

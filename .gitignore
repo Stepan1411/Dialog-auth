@@ -1,0 +1,12 @@
+/.gradle
+/.idea
+/.vscode
+/_WIKI
+/build/classes
+/build/devlibs
+/build/loom-cache
+/build/processIncludeJars
+/build/reports
+/build/resources
+/build/tmp
+/run

@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:multi_action",
+  "title": "Login",
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": "§cIncorrect password!§r\n\nPlease try again"
+  },
+  "can_close_with_escape": false,
+  "inputs": [
+    {
+      "type": "minecraft:text",
+      "key": "pass",
+      "label": "Enter password"
+    }
+  ],
+  "exit_action": {
+    "label": "Leave",
+    "action": {
+      "type": "minecraft:run_command",
+      "command": "dialogauth leave"
+    }
+  },
+  "actions": [
+    {
+      "label": "Login",
+      "action": {
+        "type": "dynamic/run_command",
+        "template": "dialogauth login $(pass)_"
+      }
+    }
+  ],
+  "pause": false
+}

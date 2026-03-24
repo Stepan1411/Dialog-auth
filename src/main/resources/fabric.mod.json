@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "dialog-auth",
+  "version": "${version}",
+  "name": "dialog-auth",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/dialog-auth/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "fabric-datagen": [
+      "org.stepan1411.dialogAuth.client.DialogAuthDataGenerator"
+    ],
+    "main": [
+      "org.stepan1411.dialogAuth.DialogAuth"
+    ]
+  },
+  "mixins": [
+    "dialog-auth.mixins.json",
+    {
+      "config": "dialog-auth.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

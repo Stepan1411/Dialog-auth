@@ -1,0 +1,27 @@
+{
+  "attributes": {
+    "minecraft:visual/fog_color": 0,
+    "minecraft:visual/sky_color": 0,
+    "minecraft:visual/fog_start_distance": 6,
+    "minecraft:visual/fog_end_distance": 8,
+    "minecraft:visual/cloud_fog_end_distance": 0
+  },
+  "temperature": 0.5,
+  "downfall": 0.5,
+  "has_precipitation": false,
+  "temperature_modifier": "none",
+  "creature_spawn_probability": 0,
+  "effects": {
+    "water_color": 0,
+    "grass_color": 0,
+    "foliage_color": 0,
+    "dry_foliage_color": 0,
+    "grass_color_modifier": "none",
+    "sky_color": 0,
+    "fog_color": 0
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": [],
+  "features": []
+}
