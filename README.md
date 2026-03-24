@@ -18,11 +18,11 @@ A modern, secure authentication system for Minecraft servers using native dialog
 
 ## Screenshots
 
-![reg](https://cdn.modrinth.com/data/cached_images/2471204b35ee149f51763fd27fa0106673652dc2.jpeg)
-
-![log](https://cdn.modrinth.com/data/cached_images/dd349758c015d40cc1724b5a5609356fa85732a4.jpeg)
-
-![changepass](https://cdn.modrinth.com/data/cached_images/ec521f22af45a0ca1924d234561bd328d7209edb.jpeg)
+<p align="center">
+  <img src="https://cdn.modrinth.com/data/cached_images/2471204b35ee149f51763fd27fa0106673652dc2.jpeg" width="30%" alt="Registration Dialog"/>
+  <img src="https://cdn.modrinth.com/data/cached_images/dd349758c015d40cc1724b5a5609356fa85732a4.jpeg" width="30%" alt="Login Dialog"/>
+  <img src="https://cdn.modrinth.com/data/cached_images/ec521f22af45a0ca1924d234561bd328d7209edb.jpeg" width="30%" alt="Change Password Dialog"/>
+</p>
 
 ## How It Works
 
